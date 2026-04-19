@@ -129,16 +129,20 @@ func (provider *Provider) Name() string {
 	return "cloudflare_temp_email"
 }
 
-func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
+func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
 	selectedDomain, err := provider.nextDomain()
 	if err != nil {
 		return mailkit.Mailbox{}, err
+	}
+	namePrefix := strings.TrimSpace(input.MailboxPrefix)
+	if namePrefix == "" {
+		namePrefix = provider.generateMailboxName()
 	}
 
 	response, err := provider.newRequest(ctx, "", true).
 		SetBody(map[string]any{
 			"enablePrefix": true,
-			"name":         provider.generateMailboxName(),
+			"name":         namePrefix,
 			"domain":       selectedDomain,
 		}).
 		Post("/admin/new_address")

@@ -14,7 +14,8 @@ type Mailbox struct {
 }
 
 type CreateMailboxInput struct {
-	StaticProxy string `json:"static_proxy"`
+	StaticProxy   string `json:"static_proxy"`
+	MailboxPrefix string `json:"mailbox_prefix"`
 }
 
 type WaitForOTPInput struct {

@@ -59,7 +59,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{
+		MailboxPrefix: "customprefix",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

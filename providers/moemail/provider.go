@@ -87,7 +87,7 @@ func (provider *Provider) Name() string {
 	return "moemail"
 }
 
-func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
+func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
 	domain, err := provider.getDomain(ctx)
 	if err != nil {
 		return mailkit.Mailbox{}, err
@@ -96,11 +96,14 @@ func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMai
 		return mailkit.Mailbox{}, errors.New("no moemail domains available")
 	}
 
-	nameLength := minNameLength
-	if maxNameLength > minNameLength {
-		nameLength += provider.randomSource.Intn(maxNameLength - minNameLength + 1)
+	namePrefix := strings.TrimSpace(input.MailboxPrefix)
+	if namePrefix == "" {
+		nameLength := minNameLength
+		if maxNameLength > minNameLength {
+			nameLength += provider.randomSource.Intn(maxNameLength - minNameLength + 1)
+		}
+		namePrefix = provider.randomName(nameLength)
 	}
-	namePrefix := provider.randomName(nameLength)
 
 	response, err := provider.newRequest(ctx).
 		SetBody(map[string]any{
