@@ -36,7 +36,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL)
+	provider := New(server.URL, false)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -71,7 +71,7 @@ func TestWaitForOTPExtractsCodeFromOpenAIMail(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL)
+	provider := New(server.URL, false)
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "target@example.com",

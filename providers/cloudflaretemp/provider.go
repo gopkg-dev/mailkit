@@ -59,6 +59,16 @@ func init() {
 						{Value: "round_robin", Label: "Round Robin"},
 					},
 				},
+				{
+					Name:      "debug",
+					Label:     "Debug",
+					InputType: "select",
+					Required:  false,
+					Options: []mailkit.ProviderFieldOption{
+						{Value: "false", Label: "Off"},
+						{Value: "true", Label: "On"},
+					},
+				},
 			},
 		},
 		Factory: func(config mailkit.ProviderConfig, _ mailkit.FactoryDependencies) (mailkit.Provider, error) {
@@ -67,6 +77,7 @@ func init() {
 				config.GetString("admin_password"),
 				config.GetStrings("domains"),
 				config.GetStringOr("domain_strategy", defaultDomainStrategy),
+				config.GetBool("debug"),
 			), nil
 		},
 	})
@@ -83,9 +94,12 @@ type Provider struct {
 	domainCounter  atomic.Uint64
 }
 
-func New(apiBase string, adminPassword string, domains []string, domainStrategy string) *Provider {
+func New(apiBase string, adminPassword string, domains []string, domainStrategy string, debug bool) *Provider {
 	baseURL := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	client := req.C()
+	if debug {
+		client.DevMode()
+	}
 	client.SetBaseURL(baseURL)
 
 	normalizedDomains := make([]string, 0, len(domains))

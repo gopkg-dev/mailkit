@@ -3,6 +3,7 @@ package mailkit
 import (
 	"context"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -70,6 +71,18 @@ func (config ProviderConfig) GetStrings(name string) []string {
 		return nil
 	}
 	return config[normalizeProviderKey(name)].GetStrings()
+}
+
+func (config ProviderConfig) GetBool(name string) bool {
+	value := strings.TrimSpace(config.GetString(name))
+	if value == "" {
+		return false
+	}
+	parsedValue, err := strconv.ParseBool(value)
+	if err != nil {
+		return false
+	}
+	return parsedValue
 }
 
 func (config ProviderConfig) HasValue(name string) bool {

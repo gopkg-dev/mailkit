@@ -30,6 +30,19 @@ func TestProviderConfigReadsStructuredValues(t *testing.T) {
 	if config.GetStringOr("missing", "random") != "random" {
 		t.Fatalf("expected fallback value for missing string field")
 	}
+
+	if !(mailkit.ProviderConfig{"debug": mailkit.StringValue("true")}).GetBool("debug") {
+		t.Fatalf("expected debug=true to parse as bool true")
+	}
+	if !(mailkit.ProviderConfig{"debug": mailkit.StringValue("1")}).GetBool("debug") {
+		t.Fatalf("expected debug=1 to parse as bool true")
+	}
+	if (mailkit.ProviderConfig{"debug": mailkit.StringValue("invalid")}).GetBool("debug") {
+		t.Fatalf("expected invalid debug value to parse as bool false")
+	}
+	if (mailkit.ProviderConfig{}).GetBool("debug") {
+		t.Fatalf("expected missing debug value to parse as bool false")
+	}
 }
 
 func TestNewProviderRejectsMissingRequiredStringSliceField(t *testing.T) {

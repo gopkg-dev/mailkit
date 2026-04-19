@@ -136,22 +136,22 @@ type Provider interface {
 
 ### `mailtm`
 
-- 字段：`api_base`
+- 字段：`api_base`、`debug`（可选）
 - 用途：接入 Mail.tm
 
 ### `moemail`
 
-- 字段：`api_base`、`api_key`
+- 字段：`api_base`、`api_key`、`debug`（可选）
 - 用途：接入 MoeMail
 
 ### `duckmail`
 
-- 字段：`api_base`、`bearer_token`、`domain`（可选）
+- 字段：`api_base`、`bearer_token`、`domain`（可选）、`debug`（可选）
 - 用途：接入 DuckMail
 
 ### `cloudflare_temp_email`
 
-- 字段：`api_base`、`admin_password`、`domains`、`domain_strategy`
+- 字段：`api_base`、`admin_password`、`domains`、`domain_strategy`、`debug`（可选）
 - 用途：接入 Cloudflare Temp Email 服务端
 
 `domain_strategy` 支持：
@@ -161,7 +161,7 @@ type Provider interface {
 
 ### `tempmail_lol`
 
-- 字段：`api_base`
+- 字段：`api_base`、`debug`（可选）
 - 用途：接入 TempMail.lol v2 inbox API
 
 ## 配置方式
@@ -191,6 +191,7 @@ config := mailkit.ProviderConfig{
 apiBase := config.GetString("api_base")
 domains := config.GetStrings("domains")
 strategy := config.GetStringOr("domain_strategy", "random")
+debug := config.GetBool("debug")
 ```
 
 ## 路由策略

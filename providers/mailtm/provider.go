@@ -26,10 +26,20 @@ func init() {
 					Placeholder: "https://api.mail.tm",
 					Required:    true,
 				},
+				{
+					Name:      "debug",
+					Label:     "Debug",
+					InputType: "select",
+					Required:  false,
+					Options: []mailkit.ProviderFieldOption{
+						{Value: "false", Label: "Off"},
+						{Value: "true", Label: "On"},
+					},
+				},
 			},
 		},
 		Factory: func(config mailkit.ProviderConfig, _ mailkit.FactoryDependencies) (mailkit.Provider, error) {
-			return New(config.Get("api_base")), nil
+			return New(config.Get("api_base"), config.GetBool("debug")), nil
 		},
 	})
 }
@@ -39,9 +49,12 @@ type Provider struct {
 	client  *req.Client
 }
 
-func New(apiBase string) *Provider {
+func New(apiBase string, debug bool) *Provider {
 	baseURL := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	client := req.C()
+	if debug {
+		client.DevMode()
+	}
 	client.SetBaseURL(baseURL)
 
 	return &Provider{
