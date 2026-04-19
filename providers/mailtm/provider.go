@@ -79,12 +79,13 @@ func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.Creat
 	domain := domains[0]
 	localPartPrefix := strings.TrimSpace(input.MailboxPrefix)
 	for attempt := 0; attempt < 5; attempt++ {
-		localPart := fmt.Sprintf("oc%x", time.Now().UnixNano()+int64(attempt))
+		timestamp := time.Now().UnixNano() + int64(attempt)
+		localPart := fmt.Sprintf("oc%x", timestamp)
 		if localPartPrefix != "" {
-			localPart = fmt.Sprintf("%s%x", localPartPrefix, time.Now().UnixNano()+int64(attempt))
+			localPart = fmt.Sprintf("%s%x", localPartPrefix, timestamp)
 		}
 		emailAddress := fmt.Sprintf("%s@%s", localPart, domain)
-		password := fmt.Sprintf("pw%x", time.Now().UnixNano()+int64(attempt))
+		password := fmt.Sprintf("pw%x", timestamp)
 
 		createResponse, err := provider.newRequest(ctx, "", true).
 			SetBody(map[string]any{
