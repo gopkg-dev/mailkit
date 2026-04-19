@@ -15,6 +15,7 @@ import (
 
 func TestCreateMailboxUsesRoundRobinDomainStrategy(t *testing.T) {
 	var requestCount atomic.Int64
+	const mailboxPrefix = "customprefix"
 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost || request.URL.Path != "/admin/new_address" {
@@ -28,6 +29,9 @@ func TestCreateMailboxUsesRoundRobinDomainStrategy(t *testing.T) {
 		if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
 			t.Fatalf("decode request body: %v", err)
 		}
+		if payload["name"] != mailboxPrefix {
+			t.Fatalf("expected mailbox prefix %s, got %#v", mailboxPrefix, payload["name"])
+		}
 
 		currentRequest := requestCount.Add(1)
 		domain := payload["domain"].(string)
@@ -40,11 +44,11 @@ func TestCreateMailboxUsesRoundRobinDomainStrategy(t *testing.T) {
 
 	provider := New(server.URL, "admin-secret", []string{"one.example.com", "two.example.com"}, "round_robin", false)
 
-	firstMailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	firstMailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{MailboxPrefix: mailboxPrefix})
 	if err != nil {
 		t.Fatalf("create first mailbox: %v", err)
 	}
-	secondMailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	secondMailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{MailboxPrefix: mailboxPrefix})
 	if err != nil {
 		t.Fatalf("create second mailbox: %v", err)
 	}

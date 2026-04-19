@@ -95,7 +95,7 @@ func (provider *Provider) Name() string {
 	return "duckmail"
 }
 
-func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
+func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
 	domain, err := provider.getDomain(ctx)
 	if err != nil {
 		return mailkit.Mailbox{}, err
@@ -104,7 +104,11 @@ func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMai
 		return mailkit.Mailbox{}, errors.New("no duckmail domains available")
 	}
 
-	emailAddress := fmt.Sprintf("oc%x@%s", time.Now().UnixNano(), domain)
+	localPart := strings.TrimSpace(input.MailboxPrefix)
+	if localPart == "" {
+		localPart = fmt.Sprintf("oc%x", time.Now().UnixNano())
+	}
+	emailAddress := fmt.Sprintf("%s@%s", localPart, domain)
 	password := fmt.Sprintf("pw%x", time.Now().UnixNano())
 
 	createResponse, err := provider.newRequest(ctx, provider.bearerToken, true).

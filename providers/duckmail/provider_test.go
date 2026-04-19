@@ -14,6 +14,8 @@ import (
 )
 
 func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
+	const mailboxPrefix = "customprefix"
+
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/domains":
@@ -32,6 +34,14 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 			if request.Header.Get("Authorization") != "Bearer provider-token" {
 				t.Fatalf("expected provider bearer token on /accounts")
 			}
+			var payload map[string]any
+			if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
+				t.Fatalf("decode create account body: %v", err)
+			}
+			address := payload["address"].(string)
+			if !strings.HasPrefix(address, mailboxPrefix+"@") {
+				t.Fatalf("expected mailbox prefix %s in address, got %s", mailboxPrefix, address)
+			}
 			writer.WriteHeader(http.StatusCreated)
 			_ = json.NewEncoder(writer).Encode(map[string]any{"ok": true})
 		case request.Method == http.MethodPost && request.URL.Path == "/token":
@@ -47,7 +57,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 
 	provider := New(server.URL, "provider-token", "", false)
 
-	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{MailboxPrefix: mailboxPrefix})
 	if err != nil {
 		t.Fatalf("expected create mailbox to succeed: %v", err)
 	}

@@ -13,6 +13,8 @@ import (
 )
 
 func TestCreateMailboxReturnsEmailAndEmailID(t *testing.T) {
+	const mailboxPrefix = "customprefix"
+
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/api/config":
@@ -32,6 +34,9 @@ func TestCreateMailboxReturnsEmailAndEmailID(t *testing.T) {
 			}
 			domain := payload["domain"].(string)
 			name := payload["name"].(string)
+			if name != mailboxPrefix {
+				t.Fatalf("expected mailbox prefix %s, got %s", mailboxPrefix, name)
+			}
 			_ = json.NewEncoder(writer).Encode(map[string]any{
 				"id":    "email-id-1",
 				"email": name + "@" + domain,
@@ -44,7 +49,7 @@ func TestCreateMailboxReturnsEmailAndEmailID(t *testing.T) {
 
 	provider := New(server.URL, "api-key-value", false)
 
-	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{MailboxPrefix: mailboxPrefix})
 	if err != nil {
 		t.Fatalf("expected create mailbox to succeed: %v", err)
 	}

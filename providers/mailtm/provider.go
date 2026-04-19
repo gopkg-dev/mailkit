@@ -67,7 +67,7 @@ func (provider *Provider) Name() string {
 	return "mailtm"
 }
 
-func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
+func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.CreateMailboxInput) (mailkit.Mailbox, error) {
 	domains, err := provider.getDomains(ctx)
 	if err != nil {
 		return mailkit.Mailbox{}, err
@@ -77,8 +77,16 @@ func (provider *Provider) CreateMailbox(ctx context.Context, _ mailkit.CreateMai
 	}
 
 	domain := domains[0]
+	namePrefix := strings.TrimSpace(input.MailboxPrefix)
 	for attempt := 0; attempt < 5; attempt++ {
-		emailAddress := fmt.Sprintf("oc%x@%s", time.Now().UnixNano()+int64(attempt), domain)
+		localPart := fmt.Sprintf("oc%x", time.Now().UnixNano()+int64(attempt))
+		if namePrefix != "" {
+			localPart = namePrefix
+			if attempt > 0 {
+				localPart = fmt.Sprintf("%s%x", namePrefix, time.Now().UnixNano()+int64(attempt))
+			}
+		}
+		emailAddress := fmt.Sprintf("%s@%s", localPart, domain)
 		password := fmt.Sprintf("pw%x", time.Now().UnixNano()+int64(attempt))
 
 		createResponse, err := provider.newRequest(ctx, "", true).
