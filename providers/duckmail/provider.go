@@ -230,7 +230,7 @@ func (provider *Provider) TestConnection(ctx context.Context, _ mailkit.CreateMa
 }
 
 func (provider *Provider) getDomain(ctx context.Context) (string, error) {
-	response, err := provider.newRequest(ctx, "", false).Get("/domains")
+	response, err := provider.newRequest(ctx, provider.bearerToken, false).Get("/domains")
 	if err != nil {
 		return "", fmt.Errorf("list duckmail domains: %w", err)
 	}
