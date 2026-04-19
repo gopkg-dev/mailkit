@@ -3,6 +3,7 @@ package duckmail
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -97,6 +98,8 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 }
 
 func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
+	const configuredDomain = "custom.duckmail.app"
+
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/domains":
@@ -112,7 +115,7 @@ func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
 				t.Fatalf("decode request body: %v", err)
 			}
 			address, _ := payload["address"].(string)
-			if !strings.HasSuffix(address, "@custom.duckmail.app") {
+			if !strings.HasSuffix(address, "@"+configuredDomain) {
 				t.Fatalf("expected configured domain in address, got %s", address)
 			}
 			writer.WriteHeader(http.StatusCreated)
@@ -125,13 +128,13 @@ func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token", "custom.duckmail.app")
+	provider := New(server.URL, "provider-token", configuredDomain)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
 		t.Fatalf("expected create mailbox to succeed: %v", err)
 	}
-	if !strings.HasSuffix(mailbox.Email, "@custom.duckmail.app") {
+	if !strings.HasSuffix(mailbox.Email, "@"+configuredDomain) {
 		t.Fatalf("expected configured duckmail domain in email address, got %s", mailbox.Email)
 	}
 }
@@ -155,7 +158,7 @@ func TestCreateMailboxReturnsErrorWhenConfiguredDomainUnavailable(t *testing.T) 
 	if err == nil {
 		t.Fatalf("expected create mailbox to fail when configured domain is unavailable")
 	}
-	if !strings.Contains(err.Error(), "configured duckmail domain") {
+	if !errors.Is(err, errConfiguredDomainUnavailable) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

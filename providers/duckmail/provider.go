@@ -19,6 +19,8 @@ const (
 	defaultPollInterval = 3 * time.Second
 )
 
+var errConfiguredDomainUnavailable = errors.New("configured duckmail domain is not available")
+
 func init() {
 	mailkit.MustRegister(mailkit.Registration{
 		Spec: mailkit.ProviderSpec{
@@ -254,11 +256,11 @@ func (provider *Provider) getDomain(ctx context.Context) (string, error) {
 	}
 	if provider.domain != "" {
 		for _, domain := range domains {
-			if strings.EqualFold(domain, provider.domain) {
+			if domain == provider.domain {
 				return domain, nil
 			}
 		}
-		return "", fmt.Errorf("configured duckmail domain %q is not available", provider.domain)
+		return "", fmt.Errorf("%w: %s", errConfiguredDomainUnavailable, provider.domain)
 	}
 	return domains[provider.randomSource.Intn(len(domains))], nil
 }
