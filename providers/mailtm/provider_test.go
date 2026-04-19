@@ -33,7 +33,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 				t.Fatalf("decode create account body: %v", err)
 			}
 			address := payload["address"].(string)
-			if !strings.HasPrefix(address, mailboxPrefix+"@") {
+			if !strings.HasPrefix(address, mailboxPrefix) {
 				t.Fatalf("expected mailbox prefix %s in address, got %s", mailboxPrefix, address)
 			}
 			writer.WriteHeader(http.StatusCreated)
