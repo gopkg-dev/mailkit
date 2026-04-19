@@ -19,6 +19,8 @@ const (
 	defaultPollInterval = 3 * time.Second
 )
 
+var errConfiguredDomainUnavailable = errors.New("configured duckmail domain is not available")
+
 func init() {
 	mailkit.MustRegister(mailkit.Registration{
 		Spec: mailkit.ProviderSpec{
@@ -39,10 +41,17 @@ func init() {
 					InputType: "password",
 					Required:  false,
 				},
+				{
+					Name:        "domain",
+					Label:       "Domain",
+					InputType:   "text",
+					Placeholder: "duckmail.app",
+					Required:    false,
+				},
 			},
 		},
 		Factory: func(config mailkit.ProviderConfig, _ mailkit.FactoryDependencies) (mailkit.Provider, error) {
-			return New(config.Get("api_base"), config.Get("bearer_token")), nil
+			return New(config.Get("api_base"), config.Get("bearer_token"), config.Get("domain")), nil
 		},
 	})
 }
@@ -50,11 +59,12 @@ func init() {
 type Provider struct {
 	apiBase      string
 	bearerToken  string
+	domain       string
 	client       *req.Client
 	randomSource *rand.Rand
 }
 
-func New(apiBase string, bearerToken string) *Provider {
+func New(apiBase string, bearerToken string, domain string) *Provider {
 	baseURL := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	client := req.C()
 	client.SetBaseURL(baseURL)
@@ -62,6 +72,7 @@ func New(apiBase string, bearerToken string) *Provider {
 	return &Provider{
 		apiBase:      baseURL,
 		bearerToken:  strings.TrimSpace(bearerToken),
+		domain:       strings.TrimSpace(domain),
 		client:       client,
 		randomSource: rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
@@ -242,6 +253,14 @@ func (provider *Provider) getDomain(ctx context.Context) (string, error) {
 	}
 	if len(domains) == 0 {
 		return "", nil
+	}
+	if provider.domain != "" {
+		for _, domain := range domains {
+			if domain == provider.domain {
+				return domain, nil
+			}
+		}
+		return "", fmt.Errorf("%w: %s", errConfiguredDomainUnavailable, provider.domain)
 	}
 	return domains[provider.randomSource.Intn(len(domains))], nil
 }

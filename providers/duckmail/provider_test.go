@@ -3,6 +3,7 @@ package duckmail
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -41,7 +42,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token")
+	provider := New(server.URL, "provider-token", "")
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -80,7 +81,7 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token")
+	provider := New(server.URL, "provider-token", "")
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "user@duckmail.app",
@@ -93,5 +94,71 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 	}
 	if code != "443322" {
 		t.Fatalf("expected otp 443322, got %s", code)
+	}
+}
+
+func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
+	const configuredDomain = "custom.duckmail.app"
+
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch {
+		case request.Method == http.MethodGet && request.URL.Path == "/domains":
+			_ = json.NewEncoder(writer).Encode(map[string]any{
+				"hydra:member": []map[string]any{
+					{"domain": "duckmail.app", "isActive": true},
+					{"domain": "custom.duckmail.app", "isActive": true},
+				},
+			})
+		case request.Method == http.MethodPost && request.URL.Path == "/accounts":
+			var payload map[string]any
+			if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
+				t.Fatalf("decode request body: %v", err)
+			}
+			address, _ := payload["address"].(string)
+			if !strings.HasSuffix(address, "@"+configuredDomain) {
+				t.Fatalf("expected configured domain in address, got %s", address)
+			}
+			writer.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(writer).Encode(map[string]any{"ok": true})
+		case request.Method == http.MethodPost && request.URL.Path == "/token":
+			_ = json.NewEncoder(writer).Encode(map[string]any{"token": "mail-token"})
+		default:
+			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	provider := New(server.URL, "provider-token", configuredDomain)
+
+	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	if err != nil {
+		t.Fatalf("expected create mailbox to succeed: %v", err)
+	}
+	if !strings.HasSuffix(mailbox.Email, "@"+configuredDomain) {
+		t.Fatalf("expected configured duckmail domain in email address, got %s", mailbox.Email)
+	}
+}
+
+func TestCreateMailboxReturnsErrorWhenConfiguredDomainUnavailable(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet || request.URL.Path != "/domains" {
+			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
+		}
+		_ = json.NewEncoder(writer).Encode(map[string]any{
+			"hydra:member": []map[string]any{
+				{"domain": "duckmail.app", "isActive": true},
+			},
+		})
+	}))
+	defer server.Close()
+
+	provider := New(server.URL, "provider-token", "custom.duckmail.app")
+
+	_, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
+	if err == nil {
+		t.Fatalf("expected create mailbox to fail when configured domain is unavailable")
+	}
+	if !errors.Is(err, errConfiguredDomainUnavailable) {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }

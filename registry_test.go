@@ -18,7 +18,7 @@ func TestProviderSpecsExposeBuiltinProviders(t *testing.T) {
 	expectedFieldsByProvider := map[string][]string{
 		"mailtm":                {"api_base"},
 		"moemail":               {"api_base", "api_key"},
-		"duckmail":              {"api_base", "bearer_token"},
+		"duckmail":              {"api_base", "bearer_token", "domain"},
 		"cloudflare_temp_email": {"api_base", "admin_password", "domains", "domain_strategy"},
 		"tempmail_lol":          {"api_base"},
 	}

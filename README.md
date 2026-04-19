@@ -146,7 +146,7 @@ type Provider interface {
 
 ### `duckmail`
 
-- 字段：`api_base`、`bearer_token`
+- 字段：`api_base`、`bearer_token`、`domain`（可选）
 - 用途：接入 DuckMail
 
 ### `cloudflare_temp_email`
