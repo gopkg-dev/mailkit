@@ -32,7 +32,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL)
+	provider := New(server.URL, false)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -68,7 +68,7 @@ func TestWaitForOTPExtractsCodeFromInboxMessages(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL)
+	provider := New(server.URL, false)
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "user@tempmail.lol",
@@ -85,7 +85,7 @@ func TestWaitForOTPExtractsCodeFromInboxMessages(t *testing.T) {
 }
 
 func TestClientForProxyConfiguresValidatedProxyURL(t *testing.T) {
-	provider := New("https://api.tempmail.lol")
+	provider := New("https://api.tempmail.lol", false)
 
 	defaultClient, err := provider.clientForProxy("")
 	if err != nil {

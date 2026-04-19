@@ -16,11 +16,11 @@ func TestProviderSpecsExposeBuiltinProviders(t *testing.T) {
 	providerSpecs := mailkit.ProviderSpecs()
 
 	expectedFieldsByProvider := map[string][]string{
-		"mailtm":                {"api_base"},
-		"moemail":               {"api_base", "api_key"},
-		"duckmail":              {"api_base", "bearer_token", "domain"},
-		"cloudflare_temp_email": {"api_base", "admin_password", "domains", "domain_strategy"},
-		"tempmail_lol":          {"api_base"},
+		"mailtm":                {"api_base", "debug"},
+		"moemail":               {"api_base", "api_key", "debug"},
+		"duckmail":              {"api_base", "bearer_token", "domain", "debug"},
+		"cloudflare_temp_email": {"api_base", "admin_password", "domains", "domain_strategy", "debug"},
+		"tempmail_lol":          {"api_base", "debug"},
 	}
 
 	for providerName, expectedFields := range expectedFieldsByProvider {

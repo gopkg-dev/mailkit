@@ -48,10 +48,20 @@ func init() {
 					Placeholder: "duckmail.app",
 					Required:    false,
 				},
+				{
+					Name:      "debug",
+					Label:     "Debug",
+					InputType: "select",
+					Required:  false,
+					Options: []mailkit.ProviderFieldOption{
+						{Value: "false", Label: "Off"},
+						{Value: "true", Label: "On"},
+					},
+				},
 			},
 		},
 		Factory: func(config mailkit.ProviderConfig, _ mailkit.FactoryDependencies) (mailkit.Provider, error) {
-			return New(config.Get("api_base"), config.Get("bearer_token"), config.Get("domain")), nil
+			return New(config.Get("api_base"), config.Get("bearer_token"), config.Get("domain"), config.GetBool("debug")), nil
 		},
 	})
 }
@@ -64,9 +74,12 @@ type Provider struct {
 	randomSource *rand.Rand
 }
 
-func New(apiBase string, bearerToken string, domain string) *Provider {
+func New(apiBase string, bearerToken string, domain string, debug bool) *Provider {
 	baseURL := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	client := req.C()
+	if debug {
+		client.DevMode()
+	}
 	client.SetBaseURL(baseURL)
 
 	return &Provider{

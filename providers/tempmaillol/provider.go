@@ -34,10 +34,20 @@ func init() {
 					Placeholder: defaultAPIBase,
 					Required:    false,
 				},
+				{
+					Name:      "debug",
+					Label:     "Debug",
+					InputType: "select",
+					Required:  false,
+					Options: []mailkit.ProviderFieldOption{
+						{Value: "false", Label: "Off"},
+						{Value: "true", Label: "On"},
+					},
+				},
 			},
 		},
 		Factory: func(config mailkit.ProviderConfig, _ mailkit.FactoryDependencies) (mailkit.Provider, error) {
-			return New(config.GetStringOr("api_base", defaultAPIBase)), nil
+			return New(config.GetStringOr("api_base", defaultAPIBase), config.GetBool("debug")), nil
 		},
 	})
 }
@@ -47,13 +57,16 @@ type Provider struct {
 	client  *req.Client
 }
 
-func New(apiBase string) *Provider {
+func New(apiBase string, debug bool) *Provider {
 	baseURL := strings.TrimRight(strings.TrimSpace(apiBase), "/")
 	if baseURL == "" {
 		baseURL = defaultAPIBase
 	}
 
 	client := req.C()
+	if debug {
+		client.DevMode()
+	}
 	client.SetBaseURL(baseURL)
 
 	return &Provider{

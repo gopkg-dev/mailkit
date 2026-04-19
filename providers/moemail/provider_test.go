@@ -42,7 +42,7 @@ func TestCreateMailboxReturnsEmailAndEmailID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "api-key-value")
+	provider := New(server.URL, "api-key-value", false)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -77,7 +77,7 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "api-key-value")
+	provider := New(server.URL, "api-key-value", false)
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "user@moemail.app",

@@ -42,7 +42,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token", "")
+	provider := New(server.URL, "provider-token", "", false)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -81,7 +81,7 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token", "")
+	provider := New(server.URL, "provider-token", "", false)
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "user@duckmail.app",
@@ -128,7 +128,7 @@ func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token", configuredDomain)
+	provider := New(server.URL, "provider-token", configuredDomain, false)
 
 	mailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -152,7 +152,7 @@ func TestCreateMailboxReturnsErrorWhenConfiguredDomainUnavailable(t *testing.T) 
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "provider-token", "custom.duckmail.app")
+	provider := New(server.URL, "provider-token", "custom.duckmail.app", false)
 
 	_, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err == nil {

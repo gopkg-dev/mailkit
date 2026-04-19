@@ -38,7 +38,7 @@ func TestCreateMailboxUsesRoundRobinDomainStrategy(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "admin-secret", []string{"one.example.com", "two.example.com"}, "round_robin")
+	provider := New(server.URL, "admin-secret", []string{"one.example.com", "two.example.com"}, "round_robin", false)
 
 	firstMailbox, err := provider.CreateMailbox(context.Background(), mailkit.CreateMailboxInput{})
 	if err != nil {
@@ -80,7 +80,7 @@ func TestWaitForOTPExtractsCodeFromRawMIMEMessage(t *testing.T) {
 	}))
 	defer server.Close()
 
-	provider := New(server.URL, "admin-secret", []string{"one.example.com"}, "random")
+	provider := New(server.URL, "admin-secret", []string{"one.example.com"}, "random", false)
 
 	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
 		Email:        "target@example.com",
