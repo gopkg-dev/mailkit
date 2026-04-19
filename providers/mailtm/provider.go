@@ -79,7 +79,7 @@ func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.Creat
 	domain := domains[0]
 	localPartPrefix := strings.TrimSpace(input.MailboxPrefix)
 	for attempt := 0; attempt < 5; attempt++ {
-		timestamp := time.Now().UnixNano() + int64(attempt)
+		timestamp := time.Now().UnixNano() + int64(attempt)*1000
 		localPart := fmt.Sprintf("oc%x", timestamp)
 		if localPartPrefix != "" {
 			localPart = fmt.Sprintf("%s%x", localPartPrefix, timestamp)
