@@ -17,6 +17,9 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/domains":
+			if request.Header.Get("Authorization") != "Bearer provider-token" {
+				t.Fatalf("expected provider bearer token on /domains")
+			}
 			_ = json.NewEncoder(writer).Encode(map[string]any{
 				"hydra:member": []map[string]any{
 					{
@@ -103,6 +106,9 @@ func TestCreateMailboxUsesConfiguredDomain(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/domains":
+			if request.Header.Get("Authorization") != "Bearer provider-token" {
+				t.Fatalf("expected provider bearer token on /domains")
+			}
 			_ = json.NewEncoder(writer).Encode(map[string]any{
 				"hydra:member": []map[string]any{
 					{"domain": "duckmail.app", "isActive": true},
@@ -143,6 +149,9 @@ func TestCreateMailboxReturnsErrorWhenConfiguredDomainUnavailable(t *testing.T) 
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodGet || request.URL.Path != "/domains" {
 			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
+		}
+		if request.Header.Get("Authorization") != "Bearer provider-token" {
+			t.Fatalf("expected provider bearer token on /domains")
 		}
 		_ = json.NewEncoder(writer).Encode(map[string]any{
 			"hydra:member": []map[string]any{
