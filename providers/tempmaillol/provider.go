@@ -110,7 +110,7 @@ func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.Creat
 	}, nil
 }
 
-func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForOTPInput) (string, error) {
+func (provider *Provider) WaitForContent(ctx context.Context, input mailkit.WaitForContentInput) (string, error) {
 	inboxToken := strings.TrimSpace(input.Credential)
 	if inboxToken == "" {
 		return "", errors.New("tempmail.lol inbox token is required")
@@ -162,8 +162,8 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 				seenMessageIDs[messageID] = struct{}{}
 			}
 
-			if code := providerutil.FindOTPCode(buildMessageContent(message)); code != "" {
-				return code, nil
+			if content := buildMessageContent(message); strings.TrimSpace(content) != "" {
+				return content, nil
 			}
 		}
 
@@ -176,7 +176,7 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 		}
 	}
 
-	return "", errors.New("otp not received before timeout")
+	return "", errors.New("mail content not received before timeout")
 }
 
 func (provider *Provider) TestConnection(ctx context.Context, input mailkit.CreateMailboxInput) error {

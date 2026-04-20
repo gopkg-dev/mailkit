@@ -85,7 +85,7 @@ func (provider fakeProvider) CreateMailbox(_ context.Context, _ mailkit.CreateMa
 	return mailkit.Mailbox{}, nil
 }
 
-func (provider fakeProvider) WaitForOTP(_ context.Context, _ mailkit.WaitForOTPInput) (string, error) {
+func (provider fakeProvider) WaitForContent(_ context.Context, _ mailkit.WaitForContentInput) (string, error) {
 	return "", nil
 }
 

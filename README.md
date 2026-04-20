@@ -1,6 +1,6 @@
 # mailkit
 
-`mailkit` 是一个 Go 临时邮箱工具库，提供统一的 provider 注册、实例化、邮箱创建、OTP 轮询和多 provider 路由能力。
+`mailkit` 是一个 Go 临时邮箱工具库，提供统一的 provider 注册、实例化、邮箱创建、邮件内容轮询和多 provider 路由能力。
 
 模块路径：
 
@@ -13,7 +13,7 @@ github.com/gopkg-dev/mailkit
 - 统一的 `Provider` 接口
 - 内置多种临时邮箱 provider
 - 基于注册表的 provider 发现与创建
-- 支持 OTP 轮询
+- 支持邮件内容轮询
 - 支持 `round_robin`、`random`、`failover` 路由策略
 - 支持结构化 provider 配置
 
@@ -71,12 +71,12 @@ func main() {
 }
 ```
 
-### 2. 轮询 OTP
+### 2. 轮询邮件内容
 
 ```go
 ctx := context.Background()
 
-code, err := provider.WaitForOTP(ctx, mailkit.WaitForOTPInput{
+content, err := provider.WaitForContent(ctx, mailkit.WaitForContentInput{
 	Email:      mailbox.Email,
 	Credential: mailbox.Credential,
 })
@@ -84,7 +84,7 @@ if err != nil {
 	log.Fatal(err)
 }
 
-fmt.Println("otp:", code)
+fmt.Println("content:", content)
 ```
 
 ### 3. 路由多个 provider
@@ -129,7 +129,7 @@ fmt.Println("provider:", selected.Name())
 type Provider interface {
 	Name() string
 	CreateMailbox(ctx context.Context, input CreateMailboxInput) (Mailbox, error)
-	WaitForOTP(ctx context.Context, input WaitForOTPInput) (string, error)
+	WaitForContent(ctx context.Context, input WaitForContentInput) (string, error)
 	TestConnection(ctx context.Context, input CreateMailboxInput) error
 }
 ```

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -46,7 +47,7 @@ func TestCreateMailboxReturnsEmailAndToken(t *testing.T) {
 	}
 }
 
-func TestWaitForOTPExtractsCodeFromInboxMessages(t *testing.T) {
+func TestWaitForContentReturnsInboxMessageContent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodGet || request.URL.Path != "/v2/inbox" {
 			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
@@ -70,17 +71,17 @@ func TestWaitForOTPExtractsCodeFromInboxMessages(t *testing.T) {
 
 	provider := New(server.URL, false)
 
-	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
+	content, err := provider.WaitForContent(context.Background(), mailkit.WaitForContentInput{
 		Email:        "user@tempmail.lol",
 		Credential:   "mailbox-token",
 		Timeout:      300 * time.Millisecond,
 		PollInterval: 10 * time.Millisecond,
 	})
 	if err != nil {
-		t.Fatalf("expected wait for otp to succeed: %v", err)
+		t.Fatalf("expected wait for content to succeed: %v", err)
 	}
-	if code != "112233" {
-		t.Fatalf("expected otp 112233, got %s", code)
+	if !strings.Contains(content, "112233") {
+		t.Fatalf("expected content to include 112233, got %s", content)
 	}
 }
 
