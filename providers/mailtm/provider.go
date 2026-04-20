@@ -132,7 +132,7 @@ func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.Creat
 	return mailkit.Mailbox{}, errors.New("failed to create mail.tm mailbox")
 }
 
-func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForOTPInput) (string, error) {
+func (provider *Provider) WaitForContent(ctx context.Context, input mailkit.WaitForContentInput) (string, error) {
 	timeout := input.Timeout
 	if timeout <= 0 {
 		timeout = 120 * time.Second
@@ -186,13 +186,8 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 				}
 
 				content := buildMailContent(detailPayload)
-				sender := strings.ToLower(providerutil.AsString(providerutil.MapValue(detailPayload["from"], "address")))
-				if !strings.Contains(sender, "openai") && !strings.Contains(strings.ToLower(content), "openai") {
-					continue
-				}
-
-				if matches := providerutil.OTPCodePattern.FindStringSubmatch(content); len(matches) == 2 {
-					return matches[1], nil
+				if strings.TrimSpace(content) != "" {
+					return content, nil
 				}
 			}
 		}
@@ -206,7 +201,7 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 		}
 	}
 
-	return "", errors.New("otp not received before timeout")
+	return "", errors.New("mail content not received before timeout")
 }
 
 func (provider *Provider) TestConnection(ctx context.Context, input mailkit.CreateMailboxInput) error {

@@ -61,7 +61,7 @@ func TestCreateMailboxUsesRoundRobinDomainStrategy(t *testing.T) {
 	}
 }
 
-func TestWaitForOTPExtractsCodeFromRawMIMEMessage(t *testing.T) {
+func TestWaitForContentReturnsRawMIMEMessageContent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodGet || request.URL.Path != "/api/mails" {
 			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
@@ -86,16 +86,16 @@ func TestWaitForOTPExtractsCodeFromRawMIMEMessage(t *testing.T) {
 
 	provider := New(server.URL, "admin-secret", []string{"one.example.com"}, "random", false)
 
-	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
+	content, err := provider.WaitForContent(context.Background(), mailkit.WaitForContentInput{
 		Email:        "target@example.com",
 		Credential:   "mailbox-jwt",
 		Timeout:      250 * time.Millisecond,
 		PollInterval: 10 * time.Millisecond,
 	})
 	if err != nil {
-		t.Fatalf("wait for otp: %v", err)
+		t.Fatalf("wait for content: %v", err)
 	}
-	if code != "654321" {
-		t.Fatalf("expected otp 654321, got %s", code)
+	if !strings.Contains(content, "654321") {
+		t.Fatalf("expected content to include 654321, got %s", content)
 	}
 }

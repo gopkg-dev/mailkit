@@ -48,14 +48,6 @@ func ExtractBodyFromRawMIME(rawMessage string) (string, error) {
 	return "", nil
 }
 
-func FindOTPCode(content string) string {
-	matches := OTPCodePattern.FindStringSubmatch(content)
-	if len(matches) != 2 {
-		return ""
-	}
-	return matches[1]
-}
-
 func readAll(reader io.Reader) (string, error) {
 	payload, err := io.ReadAll(reader)
 	if err != nil {

@@ -61,7 +61,7 @@ func TestCreateMailboxReturnsEmailAndEmailID(t *testing.T) {
 	}
 }
 
-func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
+func TestWaitForContentReturnsMessageContent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch {
 		case request.Method == http.MethodGet && request.URL.Path == "/api/emails/email-id-1":
@@ -84,16 +84,16 @@ func TestWaitForOTPExtractsCodeFromMessageDetail(t *testing.T) {
 
 	provider := New(server.URL, "api-key-value", false)
 
-	code, err := provider.WaitForOTP(context.Background(), mailkit.WaitForOTPInput{
+	content, err := provider.WaitForContent(context.Background(), mailkit.WaitForContentInput{
 		Email:        "user@moemail.app",
 		Credential:   "email-id-1",
 		Timeout:      300 * time.Millisecond,
 		PollInterval: 10 * time.Millisecond,
 	})
 	if err != nil {
-		t.Fatalf("expected wait for otp to succeed: %v", err)
+		t.Fatalf("expected wait for content to succeed: %v", err)
 	}
-	if code != "556677" {
-		t.Fatalf("expected otp 556677, got %s", code)
+	if !strings.Contains(content, "556677") {
+		t.Fatalf("expected content to include 556677, got %s", content)
 	}
 }

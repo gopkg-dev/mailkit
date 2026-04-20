@@ -3,7 +3,6 @@ package providerutil
 import (
 	"fmt"
 	"path"
-	"regexp"
 	"strings"
 )
 
@@ -11,8 +10,6 @@ const (
 	HTTPStatusOK      = 200
 	HTTPStatusCreated = 201
 )
-
-var OTPCodePattern = regexp.MustCompile(`\b(\d{6})\b`)
 
 func NormalizeHydraMessages(payload any) []map[string]any {
 	switch typedPayload := payload.(type) {

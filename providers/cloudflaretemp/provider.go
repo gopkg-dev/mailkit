@@ -170,7 +170,7 @@ func (provider *Provider) CreateMailbox(ctx context.Context, input mailkit.Creat
 	}, nil
 }
 
-func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForOTPInput) (string, error) {
+func (provider *Provider) WaitForContent(ctx context.Context, input mailkit.WaitForContentInput) (string, error) {
 	token := strings.TrimSpace(input.Credential)
 	if token == "" {
 		return "", errors.New("cloudflare mailbox token is required")
@@ -222,8 +222,8 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 				seenMessageIDs[messageID] = struct{}{}
 
 				content := buildMessageContent(message)
-				if code := providerutil.FindOTPCode(content); code != "" {
-					return code, nil
+				if strings.TrimSpace(content) != "" {
+					return content, nil
 				}
 			}
 		}
@@ -237,7 +237,7 @@ func (provider *Provider) WaitForOTP(ctx context.Context, input mailkit.WaitForO
 		}
 	}
 
-	return "", errors.New("otp not received before timeout")
+	return "", errors.New("mail content not received before timeout")
 }
 
 func (provider *Provider) TestConnection(ctx context.Context, input mailkit.CreateMailboxInput) error {

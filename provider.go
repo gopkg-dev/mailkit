@@ -18,7 +18,7 @@ type CreateMailboxInput struct {
 	MailboxPrefix string `json:"mailbox_prefix"`
 }
 
-type WaitForOTPInput struct {
+type WaitForContentInput struct {
 	Email        string        `json:"email"`
 	Credential   string        `json:"credential"`
 	StaticProxy  string        `json:"static_proxy"`
@@ -29,7 +29,7 @@ type WaitForOTPInput struct {
 type Provider interface {
 	Name() string
 	CreateMailbox(ctx context.Context, input CreateMailboxInput) (Mailbox, error)
-	WaitForOTP(ctx context.Context, input WaitForOTPInput) (string, error)
+	WaitForContent(ctx context.Context, input WaitForContentInput) (string, error)
 	TestConnection(ctx context.Context, input CreateMailboxInput) error
 }
 
